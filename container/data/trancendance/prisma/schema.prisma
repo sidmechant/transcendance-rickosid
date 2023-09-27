@@ -1,0 +1,51 @@
+// Générateur de Prisma Client
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "debian-openssl-1.1.x"]
+}
+
+
+// Configuration de la source de données PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle pour représenter les utilisateurs
+model User {
+  id            Int      @id @unique         // ID unique de l'utilisateur
+  createdAt     DateTime @default(now())     // Date de création de l'utilisateur
+  updatedAt     DateTime @default(now())     // Date de mise à jour de l'utilisateur avec une valeur par défaut
+  username      String   @unique             // Nom d'utilisateur unique
+  displayname   String   @unique             // Nom d'affichage unique
+  lastname      String                       // Nom de famille
+  firstname     String                       // Prénom
+  profileurl    String   @unique             // URL du profil unique
+  emails        String   @unique             // Adresse e-mail unique
+  phoneNumbers  String?                       // Numéro de téléphone
+  photourl      String   @unique             // URL de la photo de profil unique
+  twoFactorAuthenticationSecret String?       // Secret de double authentification
+  isTwoFactorAuthenticationEnabled Boolean @default(false) // Activation de la double authentification (par défaut désactivée) 
+   player         Player?
+}
+
+model Player {
+  id        Int      @id @unique
+  pseudo    String   
+  urlPhotoProfile String
+  matchesA  Match[]  @relation("PlayerAMatches")
+  matchesB  Match[]  @relation("PlayerBMatches")
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  playerAId Int
+  playerBId Int
+  scoreA    Int
+  scoreB    Int
+  playedAt  DateTime @default(now())
+  playerA   Player   @relation("PlayerAMatches", fields: [playerAId], references: [id])
+  playerB   Player   @relation("PlayerBMatches", fields: [playerBId], references: [id])
+}  
